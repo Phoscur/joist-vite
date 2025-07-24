@@ -1,0 +1,70 @@
+/// <reference types='vitest' />
+import { defineConfig } from 'vite';
+import babel from 'vite-plugin-babel';
+import devServer from '@hono/vite-dev-server';
+import tsconfigPaths from 'vite-tsconfig-paths';
+
+export default defineConfig({
+  root: __dirname,
+  cacheDir: './node_modules/.vite/.',
+
+  server: {
+    port: 4200,
+    host: 'localhost',
+  },
+
+  preview: {
+    // this is still pretty useless, as it's missing a (mockup or hono) server
+    port: 4300,
+    host: 'localhost',
+  },
+
+  plugins: [
+    tsconfigPaths(),
+    devServer({
+      entry: 'src/server.ts',
+      exclude: [
+        /.*\.tsx?($|\?)/,
+        /.*\.(s?css|less)($|\?)/,
+        /.*\.(svg|png)($|\?)/,
+        /^\/@.+$/,
+        /^\/favicon\.ico$/,
+        /^\/(public|assets|static)\/.+/,
+        /^\/node_modules\/.*/,
+      ],
+      injectClientScript: true,
+    }),
+    babel({
+      babelConfig: {
+        presets: [['@babel/preset-typescript', { allowDeclareFields: true }]],
+        plugins: [
+          [
+            '@babel/plugin-proposal-decorators',
+            { version: '2023-05', decoratorsBeforeExport: true },
+          ],
+        ],
+      },
+      filter: /\.tsx?$/,
+    }),
+  ],
+
+  build: {
+    outDir: './dist',
+    reportCompressedSize: true,
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
+  },
+
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+
+    reporters: ['default'],
+    coverage: {
+      reportsDirectory: './coverage',
+      provider: 'v8',
+    },
+  },
+});
