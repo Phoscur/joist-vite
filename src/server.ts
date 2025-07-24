@@ -29,7 +29,7 @@ if (isProd) {
   app.get('/*', async (c) => {
     const lang = (getCookie(c, 'lang') as Language | undefined) ?? defaultLang;
     const index = await html();
-    return c.html(game.render(engineInjector, index, 'Dev Phlame', lang));
+    return c.html(game.render(engineInjector, index, 'Server Joist Vite', lang));
   });
 }
 export default app;

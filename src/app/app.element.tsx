@@ -2,6 +2,7 @@ import { raw } from 'hono/html';
 import { inject, injectable } from '@joist/di';
 import { defaultLang, I18n, Language, useTranslations } from './i18n';
 import { languageSelectToJSX } from './language.dropdown.element';
+import { Zeitgeber } from './signals/zeitgeber';
 
 export const appToJSX = (
   t: I18n,
@@ -15,8 +16,6 @@ export const appToJSX = (
       <zeit-ctx time={time} tick={tick}>
         <div class="wrapper">
           <div class="flex flex-row-reverse">
-            <ph-tick></ph-tick>
-            <app-clock></app-clock>
             <app-i18n-select class="grid">{languageSelectToJSX(t, language)}</app-i18n-select>
           </div>
           <div class="container mx-auto py-8">
@@ -24,7 +23,13 @@ export const appToJSX = (
               <h1 class="text-2xl font-bold">{t('nav.home')}</h1>
             </div>
           </div>
-
+          <h2>
+            {title}
+          </h2>
+          <ul>
+            <li>Time: {time}</li>
+            <li>Tick: {tick}</li>
+          </ul>
           More content...
         </div>
       </zeit-ctx>
@@ -48,6 +53,7 @@ export class TranslationProvider {
 export class AppElement extends HTMLElement {
   static observedAttributes = ['lang'];
   #i18n = inject(TranslationProvider);
+  #zeit = inject(Zeitgeber);
 
   connectedCallback() {
     console.log('AppElement connected!');
@@ -65,8 +71,8 @@ export class AppElement extends HTMLElement {
       return;
     }
     console.log('App I18n:', newValue, '[updated], previously', oldValue);
-    const title = 'CS Phlame';
-    const zeit = { time: 234, tick: 999 };
+    const title = 'Joist Vite';
+    const zeit = this.#zeit();
     this.innerHTML = raw(
       appToJSX(i18n.translate, title, zeit.tick, zeit.time, newValue as Language),
     );
