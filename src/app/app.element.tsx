@@ -3,6 +3,7 @@ import { inject, injectable } from '@joist/di';
 import { defaultLang, I18n, Language, useTranslations } from './i18n';
 import { languageSelectToJSX } from './language.dropdown.element';
 import { Zeitgeber } from './signals/zeitgeber';
+import { ConsoleDebug, Debug } from './debug.element';
 
 export const appToJSX = (
   t: I18n,
@@ -50,13 +51,16 @@ export class TranslationProvider {
   }
 }
 @injectable()
+//@injectable({ providers: [[Debug, { use: ConsoleDebug }]]})
 export class AppElement extends HTMLElement {
   static observedAttributes = ['lang'];
+  #logger = inject(Debug);
   #i18n = inject(TranslationProvider);
   #zeit = inject(Zeitgeber);
 
   connectedCallback() {
-    console.log('AppElement connected!');
+    this.#logger().log('AppElement connected!');
+    console.log('App Logger Type:', this.#logger().type);
   }
 
   attributeChangedCallback(name = 'lang', oldValue: string, newValue: string) {
@@ -64,18 +68,19 @@ export class AppElement extends HTMLElement {
       return;
     }
 
+    const logger = this.#logger();
     const i18n = this.#i18n();
     const updated = i18n.set(newValue as Language);
     if (!updated || !oldValue) {
-      console.log('App I18n:', newValue, '[no update]');
+      logger.log('App I18n:', newValue, '[no update]');
       return;
     }
-    console.log('App I18n:', newValue, '[updated], previously', oldValue);
+    logger.log('App I18n:', newValue, '[updated], previously', oldValue);
     const title = 'Joist Vite';
     const zeit = this.#zeit();
     this.innerHTML = raw(
       appToJSX(i18n.translate, title, zeit.tick, zeit.time, newValue as Language),
     );
-    console.log('App Update:', title, zeit.tick, newValue);
+    logger.log('App Update:', title, zeit.tick, newValue);
   }
 }

@@ -1,5 +1,6 @@
 import { injectable, inject } from '@joist/di';
 import { Zeitgeber } from './signals/zeitgeber';
+import { Debug } from './debug.element';
 
 /**
  * Time/Tick Context: Zeitgeber start
@@ -7,6 +8,7 @@ import { Zeitgeber } from './signals/zeitgeber';
 @injectable()
 export class ZeitContextElement extends HTMLElement {
   static observedAttributes = [];
+  #logger = inject(Debug);
   #zeit = inject(Zeitgeber);
 
   connectedCallback() {
@@ -15,11 +17,11 @@ export class ZeitContextElement extends HTMLElement {
     const tick = Number(this.attributes.getNamedItem('tick')?.value) || 0;
 
     this.#zeit().start(time, tick);
-    console.log('Zeit Ctx connected, start!', time, tick);
+    this.#logger().log('Zeit Ctx connected, start!', time, tick);
   }
 
   disconnectedCallback() {
-    console.log('Zeit Ctx disconnected, stop!');
+    this.#logger().log('Zeit Ctx disconnected, stop!');
     this.#zeit().stop();
   }
 }
